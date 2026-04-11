@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>yt-dlp GUI</title>
+  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar">
+      <div class="logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-youtube"><path d="M2.5 17a24.12 24.12 0 0 1 0-10 2 2 0 0 1 1.4-1.4 49.56 49.56 0 0 1 16.2 0A2 2 0 0 1 21.5 7a24.12 24.12 0 0 1 0 10 2 2 0 0 1-1.4 1.4 49.55 49.55 0 0 1-16.2 0A2 2 0 0 1 2.5 17"/><path d="m10 15 5-3-5-3z"/></svg>
+        <span>yt-dlp GUI</span>
+      </div>
+      <nav>
+        <button class="nav-btn active" data-tab="video-tab">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 8-6 4 6 4V8Z"/><rect width="14" height="12" x="2" y="6" rx="2" ry="2"/></svg>
+          Video
+        </button>
+        <button class="nav-btn" data-tab="audio-tab">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+          Audio
+        </button>
+        <button class="nav-btn" data-tab="subtitles-tab">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Subtitles
+        </button>
+        <button class="nav-btn" data-tab="recents-tab">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Recents
+        </button>
+      </nav>
+    </aside>
+
+    <main class="content">
+      <div class="content-wrapper">
+        <!-- VIDEO TAB -->
+        <section id="video-tab" class="tab-content active">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Download Video</h2>
+              <p class="card-description">Downloads H.264 MP4 format specifically for AE compatibility.</p>
+            </div>
+            <div class="card-content">
+              <div class="form-group">
+                <label for="video-url">YouTube URL</label>
+                <input type="text" id="video-url" placeholder="https://www.youtube.com/watch?v=...">
+              </div>
+              <div class="form-group">
+                <label for="video-quality">Max Quality</label>
+                <select id="video-quality">
+                  <option value="2160">Highest (Up to 4K)</option>
+                  <option value="1080">1080p</option>
+                  <option value="720">720p</option>
+                  <option value="480">480p</option>
+                  <option value="360">360p</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-footer">
+              <button id="btn-download-video" class="btn primary w-full">Start Download</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- AUDIO TAB -->
+        <section id="audio-tab" class="tab-content">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Download Audio</h2>
+              <p class="card-description">Extracts best quality audio as MP3.</p>
+            </div>
+            <div class="card-content">
+              <div class="form-group">
+                <label for="audio-url">YouTube URL</label>
+                <input type="text" id="audio-url" placeholder="https://www.youtube.com/watch?v=...">
+              </div>
+            </div>
+            <div class="card-footer">
+              <button id="btn-download-audio" class="btn primary w-full">Start Download</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- SUBTITLES TAB -->
+        <section id="subtitles-tab" class="tab-content">
+          <div class="card">
+            <div class="card-header">
+              <h2 class="card-title">Download Subtitles</h2>
+              <p class="card-description">Downloads available subtitles (VTT/SRT format).</p>
+            </div>
+            <div class="card-content">
+              <div class="form-group">
+                <label for="subs-url">YouTube URL</label>
+                <input type="text" id="subs-url" placeholder="https://www.youtube.com/watch?v=...">
+              </div>
+              <div class="form-group">
+                <label for="subs-lang">Subtitle Language</label>
+                <select id="subs-lang">
+                  <option value="en">English (en)</option>
+                  <option value="es">Spanish (es)</option>
+                  <option value="fr">French (fr)</option>
+                  <option value="de">German (de)</option>
+                  <option value="it">Italian (it)</option>
+                  <option value="pt">Portuguese (pt)</option>
+                  <option value="ru">Russian (ru)</option>
+                  <option value="ja">Japanese (ja)</option>
+                  <option value="ko">Korean (ko)</option>
+                  <option value="zh">Chinese (zh)</option>
+                  <option value="ar">Arabic (ar)</option>
+                  <option value="hi">Hindi (hi)</option>
+                  <option value="tr">Turkish (tr)</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-footer form-group" style="display: flex; gap: 10px;">
+              <button id="btn-download-subs" class="btn primary flex-1">Download Selected</button>
+              <button id="btn-download-all-subs" class="btn flex-1" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); border: 1px solid hsl(var(--border));">Download All</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- RECENTS TAB -->
+        <section id="recents-tab" class="tab-content h-full">
+          <div class="card h-full flex-col">
+            <div class="card-header">
+              <h2 class="card-title">Recent Downloads</h2>
+              <p class="card-description">Your past downloading activity.</p>
+            </div>
+            <div class="card-content flex-1 overflow-auto">
+              <ul id="recents-list" class="recents-list">
+                <!-- Populated by JS -->
+              </ul>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- STATUS TERMINAL -->
+      <section class="status-terminal card border-none bg-muted/50 w-full">
+        <div class="terminal-header flex justify-between items-center opacity-70">
+          <span class="text-xs uppercase tracking-wider font-semibold">Terminal Output</span>
+        </div>
+        <div id="terminal-output" class="terminal-output text-xs">
+          <div><span class="log-info">Info:</span> Ready. Waiting for tasks...</div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="renderer.js"></script>
+</body>
+</html>
