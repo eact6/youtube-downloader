@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
 const { spawn } = require('child_process');
 const fs = require('fs');
@@ -63,6 +63,12 @@ app.on('window-all-closed', () => {
 });
 
 // IPC Handlers
+ipcMain.on('open-folder', (event, filePath) => {
+  if (filePath) {
+    shell.showItemInFolder(filePath);
+  }
+});
+
 ipcMain.on('download-video', (event, { url, quality }) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   const downloadsPath = app.getPath('downloads');
@@ -84,11 +90,24 @@ ipcMain.on('download-video', (event, { url, quality }) => {
 
   win.webContents.send('download-status', `[VIDEO] Starting download for ${url}...`);
   const ytProcess = spawn('yt-dlp', args);
+  let finalPath = '';
 
-  ytProcess.stdout.on('data', (data) => win.webContents.send('download-progress', data.toString()));
+  ytProcess.stdout.on('data', (data) => {
+    const text = data.toString();
+    win.webContents.send('download-progress', text);
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const destMatch = line.match(/Destination:\s*(.+)/);
+      if (destMatch && !destMatch[1].endsWith('.webm') && !destMatch[1].endsWith('.m4a') && !destMatch[1].endsWith('.part')) finalPath = destMatch[1].trim();
+      const mergeMatch = line.match(/Merging formats into "(.+)"/);
+      if (mergeMatch) finalPath = mergeMatch[1].trim();
+      const existMatch = line.match(/\[download\]\s+(.+)\s+has already been downloaded/);
+      if (existMatch) finalPath = existMatch[1].trim();
+    }
+  });
   ytProcess.stderr.on('data', (data) => win.webContents.send('download-progress', data.toString()));
   ytProcess.on('close', (code) => {
-    if (code === 0) win.webContents.send('download-complete', { type: 'video', url, status: 'Success' });
+    if (code === 0) win.webContents.send('download-complete', { type: 'video', url, status: 'Success', filePath: finalPath });
     else win.webContents.send('download-error', `[VIDEO] Download failed with code ${code}`);
   });
 });
@@ -114,11 +133,24 @@ ipcMain.on('download-audio', (event, { url }) => {
 
   win.webContents.send('download-status', `[AUDIO] Starting download for ${url}...`);
   const ytProcess = spawn('yt-dlp', args);
+  let finalPath = '';
 
-  ytProcess.stdout.on('data', (data) => win.webContents.send('download-progress', data.toString()));
+  ytProcess.stdout.on('data', (data) => {
+    const text = data.toString();
+    win.webContents.send('download-progress', text);
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const destMatch = line.match(/Destination:\s*(.+)/);
+      if (destMatch && !destMatch[1].endsWith('.webm') && !destMatch[1].endsWith('.m4a') && !destMatch[1].endsWith('.part')) finalPath = destMatch[1].trim();
+      const mergeMatch = line.match(/Merging formats into "(.+)"/);
+      if (mergeMatch) finalPath = mergeMatch[1].trim();
+      const existMatch = line.match(/\[download\]\s+(.+)\s+has already been downloaded/);
+      if (existMatch) finalPath = existMatch[1].trim();
+    }
+  });
   ytProcess.stderr.on('data', (data) => win.webContents.send('download-progress', data.toString()));
   ytProcess.on('close', (code) => {
-    if (code === 0) win.webContents.send('download-complete', { type: 'audio', url, status: 'Success' });
+    if (code === 0) win.webContents.send('download-complete', { type: 'audio', url, status: 'Success', filePath: finalPath });
     else win.webContents.send('download-error', `[AUDIO] Download failed with code ${code}`);
   });
 });
@@ -151,11 +183,22 @@ ipcMain.on('download-subtitles', (event, { url, lang }) => {
 
   win.webContents.send('download-status', `[SUBS] Starting download for ${url}...`);
   const ytProcess = spawn('yt-dlp', args);
+  let finalPath = '';
 
-  ytProcess.stdout.on('data', (data) => win.webContents.send('download-progress', data.toString()));
+  ytProcess.stdout.on('data', (data) => {
+    const text = data.toString();
+    win.webContents.send('download-progress', text);
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const subMatch = line.match(/Writing video subtitles to:\s*(.+)/);
+      if (subMatch) finalPath = subMatch[1].trim();
+      const existMatch = line.match(/\[download\]\s+(.+)\s+has already been downloaded/);
+      if (existMatch) finalPath = existMatch[1].trim();
+    }
+  });
   ytProcess.stderr.on('data', (data) => win.webContents.send('download-progress', data.toString()));
   ytProcess.on('close', (code) => {
-    if (code === 0) win.webContents.send('download-complete', { type: 'subtitles', url, status: 'Success' });
+    if (code === 0) win.webContents.send('download-complete', { type: 'subtitles', url, status: 'Success', filePath: finalPath });
     else win.webContents.send('download-error', `[SUBS] Download failed with code ${code}`);
   });
 });

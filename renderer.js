@@ -83,7 +83,7 @@ window.electronAPI.onDownloadError((error) => {
 
 window.electronAPI.onDownloadComplete((data) => {
   appendLog(`[✓] Download Complete: ${data.url} (${data.type})`, 'log-success');
-  saveRecent(data.url, data.type);
+  saveRecent(data.url, data.type, data.filePath);
 });
 
 // Recents Logic
@@ -92,9 +92,9 @@ function getRecents() {
   return recents ? JSON.parse(recents) : [];
 }
 
-function saveRecent(url, type) {
+function saveRecent(url, type, filePath) {
   const recents = getRecents();
-  recents.unshift({ url, type, date: new Date().toLocaleString() });
+  recents.unshift({ url, type, filePath, date: new Date().toLocaleString() });
   if (recents.length > 20) recents.pop();
   localStorage.setItem('yt-recents', JSON.stringify(recents));
   renderRecents();
@@ -122,8 +122,8 @@ function renderRecents() {
     
     const videoId = extractVideoId(item.url);
     const thumbnailHtml = videoId 
-      ? `<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="Thumbnail" class="recent-thumbnail">`
-      : `<div class="recent-thumbnail"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>`;
+      ? `<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="Thumbnail" class="recent-thumbnail" style="cursor: pointer;" title="Click to open folder">`
+      : `<div class="recent-thumbnail" style="cursor: pointer;" title="Click to open folder"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>`;
     
     li.innerHTML = `
       ${thumbnailHtml}
@@ -135,6 +135,14 @@ function renderRecents() {
         </div>
       </div>
     `;
+
+    const thumbEl = li.querySelector('.recent-thumbnail');
+    if (thumbEl && item.filePath) {
+      thumbEl.addEventListener('click', () => {
+        window.electronAPI.openFolder(item.filePath);
+      });
+    }
+
     list.appendChild(li);
   });
 }

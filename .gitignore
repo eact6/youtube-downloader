@@ -135,3 +135,14 @@ build/
 
 # IntelliJ Idea
 .idea/
+
+# Media Output / Executable Binaries
+*.mp4
+*.mp3
+*.webm
+*.m4a
+*.vtt
+*.srt
+yt-dlp.exe
+ffmpeg.exe
+ffprobe.exe

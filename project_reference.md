@@ -75,8 +75,10 @@ The app automatically detects the user's primary "Downloads" folder using Electr
 
 ## Recent Downloads Data
 The "Recents" tab leverages the `localStorage` API inherent to the Chromium browser running inside Electron.
-When a download successfully completes, `renderer.js` pushes a record object to `localStorage`.
+When a download successfully completes, `main.js` parses the `yt-dlp` stdout to retrieve the exact final `filePath` and forwards it to `renderer.js`. 
+`renderer.js` pushes a record object to `localStorage` containing the `url`, `type`, and `filePath`.
 A robust regex matches against typical YouTube URL variants (like `youtu.be`, `/v/`, `v=`) to scrape the 11-character video ID synchronously. It then populates the list with native `<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg">` blocks to achieve immediate cache-hitting thumbnail rendering.
+Clicking on these cached thumbnails directly invokes `window.electronAPI.openFolder(filePath)`, which securely calls Electron's native `shell.showItemInFolder()` to open Windows Explorer and instantly highlight the downloaded file.
 
 ## Packaging & Building
 The application is pre-packaged with **electron-builder**. A custom `build` block in the `package.json` links the `build/icon.png` generated securely using the Antigravity system, and builds an NSIS Installer payload when executing:
