@@ -233,6 +233,8 @@ document.getElementById('btn-save-settings').addEventListener('click', async () 
     downloadDir: document.getElementById('settings-save-dir').value,
     defaultQuality: document.getElementById('settings-default-quality').value,
     defaultSubLang: document.getElementById('settings-default-sublang').value,
+    videoFormat: document.getElementById('settings-video-format').value,
+    audioFormat: document.getElementById('settings-audio-format').value,
     accentColor: selectedAccent,
     soundEnabled: document.getElementById('settings-sound-enabled').checked,
     autoOpenFolder: document.getElementById('settings-auto-open').checked
@@ -270,6 +272,8 @@ async function initSettingsUI() {
     document.getElementById('settings-save-dir').value = currentSettings.downloadDir || '';
     document.getElementById('settings-default-quality').value = currentSettings.defaultQuality || '1080';
     document.getElementById('settings-default-sublang').value = currentSettings.defaultSubLang || 'en';
+    document.getElementById('settings-video-format').value = currentSettings.videoFormat || 'mp4';
+    document.getElementById('settings-audio-format').value = currentSettings.audioFormat || 'mp3';
     document.getElementById('settings-sound-enabled').checked = !!currentSettings.soundEnabled;
     document.getElementById('settings-auto-open').checked = !!currentSettings.autoOpenFolder;
     

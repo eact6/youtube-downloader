@@ -15,7 +15,9 @@ function initSettings() {
     defaultSubLang: 'en',
     accentColor: 'default',
     soundEnabled: true,
-    autoOpenFolder: false
+    autoOpenFolder: false,
+    videoFormat: 'mp4',
+    audioFormat: 'mp3'
   };
   
   settings = { ...defaultSettings };
@@ -136,18 +138,33 @@ ipcMain.on('download-video', (event, { url, quality }) => {
   if (!fs.existsSync(videoDir)) fs.mkdirSync(videoDir, { recursive: true });
 
   const outPath = path.join(videoDir, '%(title)s.%(ext)s');
-  // H264 MP4 format string, requesting specified quality or lower
-  const formatStr = `bestvideo[vcodec^=avc1][height<=${quality}]+bestaudio[ext=m4a]/best[ext=mp4]/best`;
+  
+  // Dynamic format selection based on settings
+  const videoFormat = settings.videoFormat || 'mp4';
+  let formatStr = '';
+  let mergeFormat = '';
+
+  if (videoFormat === 'webm') {
+    formatStr = `bestvideo[ext=webm][height<=${quality}]+bestaudio[ext=webm]/best[ext=webm]/best`;
+    mergeFormat = 'webm';
+  } else if (videoFormat === 'mkv') {
+    formatStr = `bestvideo[height<=${quality}]+bestaudio/best`;
+    mergeFormat = 'mkv';
+  } else {
+    // Default: mp4 (H.264 + M4A) for After Effects/Premiere Pro compatibility
+    formatStr = `bestvideo[vcodec^=avc1][height<=${quality}]+bestaudio[ext=m4a]/best[ext=mp4]/best`;
+    mergeFormat = 'mp4';
+  }
   
   const args = [
     '-f', formatStr,
-    '--merge-output-format', 'mp4',
+    '--merge-output-format', mergeFormat,
     '-o', outPath,
     '--no-mtime',
     url
   ];
 
-  win.webContents.send('download-status', `[VIDEO] Starting download for ${url}...`);
+  win.webContents.send('download-status', `[VIDEO] Starting download in ${videoFormat.toUpperCase()} format for ${url}...`);
   const ytProcess = spawn('yt-dlp', args);
   let finalPath = '';
 
@@ -185,17 +202,24 @@ ipcMain.on('download-audio', (event, { url }) => {
 
   const outPath = path.join(audioDir, '%(title)s.%(ext)s');
   
+  // Dynamic audio format selection based on settings
+  const audioFormat = settings.audioFormat || 'mp3';
+  
   const args = [
     '-f', 'bestaudio',
     '-x',
-    '--audio-format', 'mp3',
-    '--audio-quality', '0',
+    '--audio-format', audioFormat,
     '-o', outPath,
     '--no-mtime',
     url
   ];
 
-  win.webContents.send('download-status', `[AUDIO] Starting download for ${url}...`);
+  if (audioFormat === 'mp3') {
+    // Add VBR quality 0 for highest MP3 compression quality
+    args.splice(4, 0, '--audio-quality', '0');
+  }
+
+  win.webContents.send('download-status', `[AUDIO] Starting extraction to ${audioFormat.toUpperCase()} format for ${url}...`);
   const ytProcess = spawn('yt-dlp', args);
   let finalPath = '';
 

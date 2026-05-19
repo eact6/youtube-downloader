@@ -14,10 +14,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add real-time success chime synthesized dynamically via Web Audio API oscillators and gains when a download successfully completes.
 - Add an "Auto-Open File Location" checkbox to automatically reveal files in Windows Explorer upon successful download completion.
 - Add customizable download defaults pre-selected for new videos (Quality/Resolution) and subtitles (Language).
+- Add customizable Preferred Video Format (MP4, MKV, WebM) and Audio Format (MP3, M4A, WAV, FLAC) selectors in Settings, including full formatting guidance (e.g. MP4 for Premiere/After Effects, WAV for lossless sound editing).
 
 ### Changed
 - Refactor all download channels (Video, Audio, and Subtitles) to retrieve and apply the user's custom save location dynamically, falling back to the default OS Downloads directory.
 - Expose secure settings retrieval, directory browse dialog, and settings saving APIs using Electron's two-way IPC `invoke` and `handle` mechanisms (`preload.js`, `main.js`, `renderer.js`).
+- Refactor video and audio download routines to dynamically request and map container formats (WebM/MKV/MP4) and audio codecs (MP3/M4A/WAV/FLAC) in yt-dlp arguments, preserving strict H.264 MP4 and high VBR MP3 as editing-compatible defaults.
 
 ## [1.0.0] - 2026-05-19
 

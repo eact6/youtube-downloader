@@ -201,6 +201,29 @@
                     <p class="settings-help">Default subtitle language pre-selected in the subtitle download pane.</p>
                   </div>
                 </div>
+
+                <div class="settings-grid" style="margin-top: 1rem;">
+                  <div class="form-group flex-1">
+                    <label for="settings-video-format">Preferred Video Format</label>
+                    <select id="settings-video-format">
+                      <option value="mp4">MP4 (H.264 / AAC) - Editing Optimized (AE/PR)</option>
+                      <option value="mkv">MKV (Matroska Container) - Best Quality Archiving</option>
+                      <option value="webm">WebM (VP9/AV1 / Opus) - High Efficiency Web</option>
+                    </select>
+                    <p class="settings-help">Selects the output container for video downloads. MP4 has broad adoption in video editors.</p>
+                  </div>
+
+                  <div class="form-group flex-1">
+                    <label for="settings-audio-format">Preferred Audio Format</label>
+                    <select id="settings-audio-format">
+                      <option value="mp3">MP3 (Variable Bitrate 320kbps) - Broadest Compatibility</option>
+                      <option value="m4a">M4A (AAC Codec) - Highly Efficient Apple/Web Standard</option>
+                      <option value="wav">WAV (Lossless PCM 24-bit) - Uncompressed Studio Editing</option>
+                      <option value="flac">FLAC (Lossless Compressed) - High Fidelity Archiving</option>
+                    </select>
+                    <p class="settings-help">Selects the output format for audio extraction. WAV is uncompressed for professional sound editing.</p>
+                  </div>
+                </div>
               </div>
 
               <!-- Theme & Style Section -->
