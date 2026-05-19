@@ -2,6 +2,8 @@
 
 A premium, open-source desktop application that wraps the powerful `yt-dlp` command-line utility in a beautifully designed Electron GUI. Built for content creators, video editors, and power users who need high-quality, reliable media downloads with a seamless user experience.
 
+[![Download Latest Release](https://img.shields.io/github/v/release/eact6/youtube-downloader?label=Download%20Latest%20Release&style=for-the-badge)](https://github.com/eact6/youtube-downloader/releases)
+
 ---
 
 ## Key Features
@@ -94,8 +96,12 @@ To run this application, ensure the following command-line tools are accessible 
 
 ## Getting Started
 
-### 1. Installation
+### 📦 Download Precompiled Binaries
+You can download the latest precompiled standalone Windows installer (`.exe`) directly from the **[Releases Page](https://github.com/eact6/youtube-downloader/releases)**.
 
+### 🛠️ Local Developer Setup
+
+#### 1. Installation
 Clone the repository and install the project dependencies:
 
 ```bash
@@ -104,15 +110,14 @@ cd youtube-downloader
 npm install
 ```
 
-### 2. Development Mode
-
+#### 2. Development Mode
 Launch the Electron window in development mode:
 
 ```bash
 npm start
 ```
 
-### 3. Packaging & Building
+#### 3. Packaging & Building
 
 Compile and bundle the production-ready standalone Windows installer (`.exe`) using **electron-builder**:
 
