@@ -40,7 +40,7 @@ jobs:
 
       - name: Build Only (Main branch & Manual runs)
         if: "!startsWith(github.ref, 'refs/tags/v')"
-        run: npm run dist
+        run: npm run dist -- --publish never
 
       # Upload the compiled exe as a workflow artifact for main branch pushes / manual runs
       - name: Upload Artifact
