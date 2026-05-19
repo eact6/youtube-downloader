@@ -255,9 +255,30 @@ option {
 .font-semibold { font-weight: 600; }
 
 .status-terminal {
-  height: 180px;
+  height: 160px;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.terminal-resizer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 4px;
+  cursor: ns-resize;
+  z-index: 50;
+  transition: background-color 0.15s ease;
+}
+
+.terminal-resizer:hover {
+  background-color: hsl(var(--primary) / 0.5);
+}
+
+.status-terminal.resizing {
+  transition: none;
+  user-select: none;
 }
 
 .terminal-header {
@@ -317,6 +338,14 @@ option {
   align-items: center;
   justify-content: center;
   color: hsl(var(--muted-foreground));
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+  border: 1px solid transparent;
+}
+
+.recent-thumbnail:hover {
+  transform: scale(1.04);
+  border-color: hsl(var(--primary));
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .recent-details {

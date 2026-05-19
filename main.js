@@ -106,7 +106,34 @@ app.on('window-all-closed', () => {
 // IPC Handlers
 ipcMain.on('open-folder', (event, filePath) => {
   if (filePath) {
-    shell.showItemInFolder(filePath);
+    try {
+      if (fs.existsSync(filePath)) {
+        shell.showItemInFolder(filePath);
+      } else {
+        // Fallback if file itself was moved or deleted - try opening containing folder
+        const dirPath = path.dirname(filePath);
+        if (fs.existsSync(dirPath)) {
+          shell.openPath(dirPath);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to open item in folder:', err);
+    }
+  }
+});
+
+ipcMain.on('open-download-folder', (event, type) => {
+  try {
+    const baseDir = settings.downloadDir || app.getPath('downloads');
+    const subFolder = type === 'video' ? 'yt-videos' : 'yt-audios';
+    const targetDir = path.join(baseDir, subFolder);
+    
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+    shell.openPath(targetDir);
+  } catch (err) {
+    console.error('Failed to open download folder:', err);
   }
 });
 
@@ -174,7 +201,14 @@ ipcMain.on('download-video', (event, { url, quality }) => {
     const lines = text.split('\n');
     for (const line of lines) {
       const destMatch = line.match(/Destination:\s*(.+)/);
-      if (destMatch && !destMatch[1].endsWith('.webm') && !destMatch[1].endsWith('.m4a') && !destMatch[1].endsWith('.part')) finalPath = destMatch[1].trim();
+      if (destMatch) {
+        const filePath = destMatch[1].trim();
+        if (!filePath.endsWith('.part') && 
+            !filePath.endsWith('.ytdl') && 
+            !/\.f\d+\.[^.]+$/.test(filePath)) {
+          finalPath = filePath;
+        }
+      }
       const mergeMatch = line.match(/Merging formats into "(.+)"/);
       if (mergeMatch) finalPath = mergeMatch[1].trim();
       const existMatch = line.match(/\[download\]\s+(.+)\s+has already been downloaded/);
@@ -229,7 +263,14 @@ ipcMain.on('download-audio', (event, { url }) => {
     const lines = text.split('\n');
     for (const line of lines) {
       const destMatch = line.match(/Destination:\s*(.+)/);
-      if (destMatch && !destMatch[1].endsWith('.webm') && !destMatch[1].endsWith('.m4a') && !destMatch[1].endsWith('.part')) finalPath = destMatch[1].trim();
+      if (destMatch) {
+        const filePath = destMatch[1].trim();
+        if (!filePath.endsWith('.part') && 
+            !filePath.endsWith('.ytdl') && 
+            !/\.f\d+\.[^.]+$/.test(filePath)) {
+          finalPath = filePath;
+        }
+      }
       const mergeMatch = line.match(/Merging formats into "(.+)"/);
       if (mergeMatch) finalPath = mergeMatch[1].trim();
       const existMatch = line.match(/\[download\]\s+(.+)\s+has already been downloaded/);

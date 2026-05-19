@@ -129,9 +129,21 @@
         <!-- RECENTS TAB -->
         <section id="recents-tab" class="tab-content h-full">
           <div class="card h-full flex-col">
-            <div class="card-header">
-              <h2 class="card-title">Recent Downloads</h2>
-              <p class="card-description">Your past downloading activity.</p>
+            <div class="card-header" style="display: flex; justify-content: space-between; align-items: flex-start; gap: 15px;">
+              <div>
+                <h2 class="card-title">Recent Downloads</h2>
+                <p class="card-description">Your past downloading activity.</p>
+              </div>
+              <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                <button id="btn-open-video-dir" class="btn" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); border: 1px solid hsl(var(--border)); height: 2rem; font-size: 0.75rem; display: inline-flex; align-items: center; padding: 0 0.75rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><polygon points="12 11 12 17 17 14"></polygon></svg>
+                  Open Videos Folder
+                </button>
+                <button id="btn-open-audio-dir" class="btn" style="background-color: hsl(var(--secondary)); color: hsl(var(--secondary-foreground)); border: 1px solid hsl(var(--border)); height: 2rem; font-size: 0.75rem; display: inline-flex; align-items: center; padding: 0 0.75rem;">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 6px;"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path><circle cx="12" cy="14" r="3"></circle><path d="M12 11V8"></path></svg>
+                  Open Audios Folder
+                </button>
+              </div>
             </div>
             <div class="card-content flex-1 overflow-auto">
               <ul id="recents-list" class="recents-list">
@@ -294,8 +306,20 @@
         </section>
       </div>
 
+      <!-- PROGRESS BAR (SHADCN STYLE) -->
+      <div id="download-progress-container" style="display: none; margin-bottom: 0.75rem; width: 100%;">
+        <div class="progress-details" style="display: flex; justify-content: space-between; font-size: 0.75rem; color: hsl(var(--muted-foreground)); font-weight: 500; margin-bottom: 0.375rem;">
+          <span id="progress-status-text">Downloading...</span>
+          <span id="progress-percent-text">0%</span>
+        </div>
+        <div class="progress-track" style="width: 100%; height: 6px; background-color: hsl(var(--muted)); border-radius: 9999px; overflow: hidden; position: relative;">
+          <div id="progress-fill" style="width: 0%; height: 100%; background-color: hsl(var(--primary)); border-radius: 9999px; transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+        </div>
+      </div>
+
       <!-- STATUS TERMINAL -->
       <section class="status-terminal card border-none bg-muted/50 w-full">
+        <div id="terminal-resizer" class="terminal-resizer"></div>
         <div class="terminal-header flex justify-between items-center opacity-70">
           <span class="text-xs uppercase tracking-wider font-semibold">Terminal Output</span>
         </div>

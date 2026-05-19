@@ -5,6 +5,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   downloadAudio: (data) => ipcRenderer.send('download-audio', data),
   downloadSubtitles: (data) => ipcRenderer.send('download-subtitles', data),
   openFolder: (filePath) => ipcRenderer.send('open-folder', filePath),
+  openDownloadFolder: (type) => ipcRenderer.send('open-download-folder', type),
   onDownloadStatus: (callback) => ipcRenderer.on('download-status', (_event, value) => callback(value)),
   onDownloadProgress: (callback) => ipcRenderer.on('download-progress', (_event, value) => callback(value)),
   onDownloadComplete: (callback) => ipcRenderer.on('download-complete', (_event, value) => callback(value)),

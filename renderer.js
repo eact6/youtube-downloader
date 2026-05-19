@@ -1,6 +1,26 @@
+// Global State Tracking
+let isDownloading = false;
+
 // Tab switching logic
 const navBtns = document.querySelectorAll('.nav-btn');
 const tabContents = document.querySelectorAll('.tab-content');
+
+function updateTerminalVisibility(tabId) {
+  const terminalEl = document.querySelector('.status-terminal');
+  const progressEl = document.getElementById('download-progress-container');
+  
+  if (terminalEl) {
+    if (tabId === 'settings-tab') {
+      terminalEl.style.display = 'none';
+      if (progressEl) progressEl.style.display = 'none';
+    } else {
+      terminalEl.style.display = 'flex';
+      if (progressEl && progressEl.classList.contains('active')) {
+        progressEl.style.display = 'block';
+      }
+    }
+  }
+}
 
 navBtns.forEach(btn => {
   btn.addEventListener('click', () => {
@@ -9,40 +29,95 @@ navBtns.forEach(btn => {
 
     btn.classList.add('active');
     document.getElementById(btn.dataset.tab).classList.add('active');
+    
+    // Toggle terminal visibility
+    updateTerminalVisibility(btn.dataset.tab);
   });
 });
 
+// Progress Bar Helper Routines
+function startDownloadIndicator(statusMsg) {
+  isDownloading = true;
+  const progressEl = document.getElementById('download-progress-container');
+  if (progressEl) {
+    progressEl.classList.add('active');
+    const currentTab = document.querySelector('.nav-btn.active').dataset.tab;
+    if (currentTab !== 'settings-tab') {
+      progressEl.style.display = 'block';
+    }
+    document.getElementById('progress-fill').style.width = '0%';
+    document.getElementById('progress-percent-text').textContent = '0%';
+    document.getElementById('progress-status-text').textContent = statusMsg;
+  }
+}
+
+function stopDownloadIndicator() {
+  isDownloading = false;
+  const progressEl = document.getElementById('download-progress-container');
+  if (progressEl) {
+    progressEl.classList.remove('active');
+    progressEl.style.display = 'none';
+  }
+}
+
 // Download Video
 document.getElementById('btn-download-video').addEventListener('click', () => {
+  if (isDownloading) {
+    alert('A download is already in progress. Please wait for the current download to finish!');
+    appendLog('[⚠️ Warning] A download is already in progress. Concurrent downloads are disabled.', 'log-warn');
+    return;
+  }
   const url = document.getElementById('video-url').value;
   const quality = document.getElementById('video-quality').value;
   if (!url) return;
+  
+  startDownloadIndicator('Downloading video...');
   window.electronAPI.downloadVideo({ url, quality });
   document.getElementById('video-url').value = '';
 });
 
 // Download Audio
 document.getElementById('btn-download-audio').addEventListener('click', () => {
+  if (isDownloading) {
+    alert('A download is already in progress. Please wait for the current download to finish!');
+    appendLog('[⚠️ Warning] A download is already in progress. Concurrent downloads are disabled.', 'log-warn');
+    return;
+  }
   const url = document.getElementById('audio-url').value;
   if (!url) return;
+  
+  startDownloadIndicator('Extracting audio...');
   window.electronAPI.downloadAudio({ url });
   document.getElementById('audio-url').value = '';
 });
 
 // Download Subtitles
 document.getElementById('btn-download-subs').addEventListener('click', () => {
+  if (isDownloading) {
+    alert('A download is already in progress. Please wait for the current download to finish!');
+    appendLog('[⚠️ Warning] A download is already in progress. Concurrent downloads are disabled.', 'log-warn');
+    return;
+  }
   const url = document.getElementById('subs-url').value;
   const lang = document.getElementById('subs-lang').value;
   if (!url) return;
+  
+  startDownloadIndicator('Extracting subtitles...');
   window.electronAPI.downloadSubtitles({ url, lang });
   document.getElementById('subs-url').value = '';
 });
 
 // Download All Subtitles
 document.getElementById('btn-download-all-subs').addEventListener('click', () => {
+  if (isDownloading) {
+    alert('A download is already in progress. Please wait for the current download to finish!');
+    appendLog('[⚠️ Warning] A download is already in progress. Concurrent downloads are disabled.', 'log-warn');
+    return;
+  }
   const url = document.getElementById('subs-url').value;
   if (!url) return;
-  // pass lang as 'all' to indicate downloading all subs
+  
+  startDownloadIndicator('Extracting all subtitles...');
   window.electronAPI.downloadSubtitles({ url, lang: 'all' });
   document.getElementById('subs-url').value = '';
 });
@@ -67,6 +142,25 @@ window.electronAPI.onDownloadProgress((progress) => {
   const lines = progress.split('\r');
   const text = lines[lines.length - 1].trim();
   if (text) appendLog(text);
+  
+  // Parse percentage from yt-dlp output
+  const percentMatch = progress.match(/\[download\]\s+([0-9.]+)%/);
+  if (percentMatch) {
+    const percentage = parseFloat(percentMatch[1]);
+    const fill = document.getElementById('progress-fill');
+    const percentText = document.getElementById('progress-percent-text');
+    if (fill && percentText) {
+      fill.style.width = `${percentage}%`;
+      percentText.textContent = `${Math.round(percentage)}%`;
+      
+      const statusText = document.getElementById('progress-status-text');
+      if (percentage === 100) {
+        statusText.textContent = 'Processing and finalizing files...';
+      } else {
+        statusText.textContent = 'Downloading media...';
+      }
+    }
+  }
 });
 
 window.electronAPI.onUpdateLog((log) => {
@@ -79,6 +173,7 @@ window.electronAPI.onUpdateLog((log) => {
 
 window.electronAPI.onDownloadError((error) => {
   appendLog(error, 'log-error');
+  stopDownloadIndicator();
 });
 
 window.electronAPI.onDownloadComplete((data) => {
@@ -87,6 +182,7 @@ window.electronAPI.onDownloadComplete((data) => {
   if (currentSettings.soundEnabled) {
     playSuccessChime();
   }
+  stopDownloadIndicator();
 });
 
 // Recents Logic
@@ -299,3 +395,49 @@ async function initSettingsUI() {
 
 // Run settings loader
 initSettingsUI();
+
+// Open Video / Audio save location buttons in Recents
+const openVideoDirBtn = document.getElementById('btn-open-video-dir');
+const openAudioDirBtn = document.getElementById('btn-open-audio-dir');
+
+if (openVideoDirBtn) {
+  openVideoDirBtn.addEventListener('click', () => {
+    window.electronAPI.openDownloadFolder('video');
+  });
+}
+
+if (openAudioDirBtn) {
+  openAudioDirBtn.addEventListener('click', () => {
+    window.electronAPI.openDownloadFolder('audio');
+  });
+}
+
+// Drag-to-Resize Status Terminal
+const terminalResizer = document.getElementById('terminal-resizer');
+const statusTerminalEl = document.querySelector('.status-terminal');
+
+if (terminalResizer && statusTerminalEl) {
+  terminalResizer.addEventListener('mousedown', (e) => {
+    e.preventDefault();
+    document.addEventListener('mousemove', handleTerminalResize);
+    document.addEventListener('mouseup', stopTerminalResize);
+    statusTerminalEl.classList.add('resizing');
+  });
+
+  function handleTerminalResize(e) {
+    const rect = statusTerminalEl.getBoundingClientRect();
+    // Calculate new height from cursor position to bottom of the element
+    const newHeight = rect.bottom - e.clientY;
+    
+    // Enforce min/max height limits for usability
+    if (newHeight >= 100 && newHeight <= 450) {
+      statusTerminalEl.style.height = `${newHeight}px`;
+    }
+  }
+
+  function stopTerminalResize() {
+    document.removeEventListener('mousemove', handleTerminalResize);
+    document.removeEventListener('mouseup', stopTerminalResize);
+    statusTerminalEl.classList.remove('resizing');
+  }
+}
