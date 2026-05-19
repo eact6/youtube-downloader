@@ -29,6 +29,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add an active download blocking locking system that warns the user with a focused dialog and a warning log if they attempt to launch new downloads before current processes conclude.
 - Add responsive drag-to-resize panel support for the Status Terminal via a top resize drag-bar that allows manual height customization with precise limit bounds.
 - Add quick-access folder navigation buttons ("Open Videos Folder", "Open Audios Folder") to the Recents activity tab header, instantly revealing target save locations.
+- Add a premium, modern `README.md` with visual architecture diagrams and detailed system prerequisites.
+- Add local project-level auto-updater skill under `.skills/changelog-updater/SKILL.md` to guide AI agents in automatically recording future workspace changes.
 
 ### Changed
 - Refactor all download channels (Video, Audio, and Subtitles) to retrieve and apply the user's custom save location dynamically, falling back to the default OS Downloads directory.
@@ -39,7 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Refactor final file path matches in download streams to support direct WebM, uncompressed WAV, lossless FLAC, and standard M4A files while strictly excluding intermediate stream fragments (.fXXX) and .ytdl files, keeping all history thumbnail click folder reveal and highlight actions fully functional.
 - Add filesystem fallback checks to standard file opening methods, automatically opening containing directory folders in Windows Explorer if the downloaded media files themselves are deleted or renamed.
 
-## [1.0.0] - 2026-05-19
+## [1.0.0] - 2026-04-11
 
 ### Added
 - Add Electron wrapper with modern Shadcn-inspired responsive user interface (`index.html`, `styles.css`, `renderer.js`).
@@ -49,4 +51,3 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add beautiful Recents list with YouTube thumbnails fetched synchronously from video IDs (`renderer.js`).
 - Add secure folder opening on Windows Explorer when clicking history cards, calling Electron's `shell.showItemInFolder()` via IPC.
 - Add standard NPM packaging scripts and `electron-builder` configuration for distributables.
-- Add local project-level auto-updater skill under `.skills/changelog-updater/SKILL.md` to guide AI agents in automatically recording future workspace changes.

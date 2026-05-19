@@ -20,6 +20,39 @@ A premium, open-source desktop application that wraps the powerful `yt-dlp` comm
 
 ---
 
+## Configuration & Media Formats
+
+### 1. Supported Media Output Formats
+The application allows you to configure preferred containers and codecs under the **Settings** tab. Dynamic card copywriting will update to explain compatibility based on your choice:
+
+| Format | Type | Use Case & Details |
+| :--- | :--- | :--- |
+| **`MP4`** | Video | Optimized for maximum compatibility, specifically pre-configured with **H.264 / AAC** for instant import in Adobe Premiere Pro and After Effects. |
+| **`MKV`** | Video | Matroska container optimized for high-quality archiving, supporting rich subtitle layers and multiple audio streams. |
+| **`WebM`** | Video | High compression efficiency using VP9/AV1 video and Opus audio, ideal for web delivery. |
+| **`MP3`** | Audio | Highly compatible audio extraction at 320kbps Level 0 Variable Bitrate (VBR). |
+| **`M4A`** | Audio | Highly efficient web-standard audio using the AAC codec. |
+| **`WAV`** | Audio | Lossless, uncompressed studio-grade PCM format (24-bit) ideal for high-fidelity sound editing. |
+| **`FLAC`** | Audio | Lossless compressed format preserving high-fidelity audio while optimizing file size. |
+
+### 2. Curated Theme Accent Colors
+Transform the UI styling instantly with one of six custom-built accent color palettes:
+
+- 🎚️ **Sleek Silver**: Minimalist steel gray, providing a clean professional interface.
+- 🟥 **YouTube Red**: Brand-accurate vibrant red accents paired with deep dark mode.
+- 💎 **Cyan Spark**: Energetic electric cyan styling for a futuristic tech look.
+- 🟢 **Emerald Green**: Refreshing lively emerald palette with deep forest hues.
+- 🔮 **Velvet Purple**: Premium royal velvet purple accents for a high-end luxury feel.
+- 🪙 **Amber Gold**: Warm, rich metallic gold detailing for a premium touch.
+
+### 3. Integrated Micro-Features
+- **Status Terminal Resizer**: Drag the resize bar at the top of the Status Terminal to adjust its height manually between 100px and 450px.
+- **Real-Time Progress Tracking**: Custom CSS transition-backed progress bar that reads stdout percentage from `yt-dlp` in real-time.
+- **Concurrent Download Lockout**: Restricts the application from running multiple simultaneous download processes to prevent `yt-dlp` IP throttling and corruption of files.
+- **Web Audio Chime**: An oscillator-synthesized success melody triggers automatically upon completion when enabled, using zero external audio files.
+
+---
+
 ## Technical Architecture
 
 The application strictly separates backend OS processes from the frontend rendering layer for security, utilizing Electron's safe IPC bridge architecture.
