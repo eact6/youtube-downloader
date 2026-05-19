@@ -5,6 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] - 2026-05-19
+
+### Fixed
+- Fix command-line arguments construction bug for audio downloads, preventing `yt-dlp` exits with error code 2 when extracting to MP3 by sequentially building arguments instead of using fragile `splice` offsets.
+- Fix sequential parameter building for subtitle downloads, replacing fragile `splice` logic to prevent potential argument-parsing errors in the future.
+- Fix UI copywriting mismatch in "Download Video" and "Download Audio" cards, making card descriptions update dynamically to match the user's preferred format settings immediately upon load or save.
+
 ## [1.1.0] - 2026-05-19
 
 ### Added

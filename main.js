@@ -243,15 +243,18 @@ ipcMain.on('download-audio', (event, { url }) => {
     '-f', 'bestaudio',
     '-x',
     '--audio-format', audioFormat,
-    '-o', outPath,
-    '--no-mtime',
-    url
   ];
 
   if (audioFormat === 'mp3') {
     // Add VBR quality 0 for highest MP3 compression quality
-    args.splice(4, 0, '--audio-quality', '0');
+    args.push('--audio-quality', '0');
   }
+
+  args.push(
+    '-o', outPath,
+    '--no-mtime',
+    url
+  );
 
   win.webContents.send('download-status', `[AUDIO] Starting extraction to ${audioFormat.toUpperCase()} format for ${url}...`);
   const ytProcess = spawn('yt-dlp', args);
@@ -303,17 +306,20 @@ ipcMain.on('download-subtitles', (event, { url, lang }) => {
   const args = [
     '--write-subs',
     '--write-auto-subs',
+  ];
+
+  if (subLang === 'all') {
+    args.push('--all-subs');
+  } else {
+    args.push('--sub-langs', `${subLang}.*`);
+  }
+
+  args.push(
     '--skip-download',
     '-o', outPath,
     '--no-mtime',
     url
-  ];
-
-  if (subLang === 'all') {
-    args.splice(2, 0, '--all-subs');
-  } else {
-    args.splice(2, 0, '--sub-langs', `${subLang}.*`);
-  }
+  );
 
   win.webContents.send('download-status', `[SUBS] Starting download for ${url}...`);
   const ytProcess = spawn('yt-dlp', args);

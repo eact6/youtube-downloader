@@ -340,6 +340,9 @@ document.getElementById('btn-save-settings').addEventListener('click', async () 
   if (success) {
     currentSettings = newSettings;
     
+    // Instantly update copywriting descriptions
+    updateTabDescriptions(currentSettings);
+    
     // Instantly update main panel options
     if (document.getElementById('video-quality')) {
       document.getElementById('video-quality').value = currentSettings.defaultQuality || '1080';
@@ -357,6 +360,36 @@ document.getElementById('btn-save-settings').addEventListener('click', async () 
   }
 });
 
+// Dynamically update video/audio tab descriptions based on current format settings
+function updateTabDescriptions(settings) {
+  const videoFormat = settings.videoFormat || 'mp4';
+  const audioFormat = settings.audioFormat || 'mp3';
+
+  const videoDescEl = document.getElementById('video-card-desc');
+  if (videoDescEl) {
+    if (videoFormat === 'mp4') {
+      videoDescEl.textContent = 'Downloads MP4 (H.264 / AAC) format specifically optimized for AE/PR compatibility.';
+    } else if (videoFormat === 'mkv') {
+      videoDescEl.textContent = 'Downloads MKV (Matroska) container optimized for best quality archiving.';
+    } else if (videoFormat === 'webm') {
+      videoDescEl.textContent = 'Downloads WebM (VP9/AV1 / Opus) format optimized for high efficiency web delivery.';
+    }
+  }
+
+  const audioDescEl = document.getElementById('audio-card-desc');
+  if (audioDescEl) {
+    if (audioFormat === 'mp3') {
+      audioDescEl.textContent = 'Extracts high-quality audio as MP3 (320kbps Level 0 VBR).';
+    } else if (audioFormat === 'm4a') {
+      audioDescEl.textContent = 'Extracts highly efficient web-standard audio as M4A (AAC codec).';
+    } else if (audioFormat === 'wav') {
+      audioDescEl.textContent = 'Extracts uncompressed studio-grade lossless audio as WAV (24-bit PCM).';
+    } else if (audioFormat === 'flac') {
+      audioDescEl.textContent = 'Extracts high-fidelity compressed lossless audio as FLAC.';
+    }
+  }
+}
+
 // Load settings on startup
 async function initSettingsUI() {
   try {
@@ -372,6 +405,9 @@ async function initSettingsUI() {
     document.getElementById('settings-audio-format').value = currentSettings.audioFormat || 'mp3';
     document.getElementById('settings-sound-enabled').checked = !!currentSettings.soundEnabled;
     document.getElementById('settings-auto-open').checked = !!currentSettings.autoOpenFolder;
+    
+    // Instantly update copywriting descriptions based on loaded settings
+    updateTabDescriptions(currentSettings);
     
     document.querySelectorAll('.theme-option').forEach(btn => {
       if (btn.dataset.theme === selectedAccent) {
