@@ -15,3 +15,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add beautiful Recents list with YouTube thumbnails fetched synchronously from video IDs (`renderer.js`).
 - Add secure folder opening on Windows Explorer when clicking history cards, calling Electron's `shell.showItemInFolder()` via IPC.
 - Add standard NPM packaging scripts and `electron-builder` configuration for distributables.
+- Add local project-level auto-updater skill under `.skills/changelog-updater/SKILL.md` to guide AI agents in automatically recording future workspace changes.
