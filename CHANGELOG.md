@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fix sequential parameter building for subtitle downloads, replacing fragile `splice` logic to prevent potential argument-parsing errors in the future.
 - Fix UI copywriting mismatch in "Download Video" and "Download Audio" cards, making card descriptions update dynamically to match the user's preferred format settings immediately upon load or save.
 
+### Changed
+- Align package metadata and documentation for public release, correcting repository clone placeholders in the README, aligning the package.json license descriptor to MIT, and generating a dedicated root LICENSE file.
+
 ## [1.1.0] - 2026-05-19
 
 ### Added

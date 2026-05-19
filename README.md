@@ -66,7 +66,7 @@ To run this application, ensure the following command-line tools are accessible 
 Clone the repository and install the project dependencies:
 
 ```bash
-git clone https://github.com/your-username/youtube-downloader.git
+git clone https://github.com/eact6/youtube-downloader.git
 cd youtube-downloader
 npm install
 ```

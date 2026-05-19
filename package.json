@@ -25,7 +25,7 @@
   },
   "keywords": [],
   "author": "Antigravity",
-  "license": "ISC",
+  "license": "MIT",
   "description": "YouTube Downloader GUI",
   "devDependencies": {
     "electron": "^41.2.0",
