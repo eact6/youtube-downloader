@@ -1,7 +1,28 @@
 const { app, BrowserWindow, ipcMain, shell, dialog } = require('electron');
 const path = require('path');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
 const fs = require('fs');
+const https = require('https');
+
+// Local binary path definitions
+const localBinDir = path.join(app.getPath('userData'), 'bin');
+const exeSuffix = process.platform === 'win32' ? '.exe' : '';
+const localYtDlp = path.join(localBinDir, `yt-dlp${exeSuffix}`);
+const localFfmpeg = path.join(localBinDir, `ffmpeg${exeSuffix}`);
+
+function getYtDlpPath() {
+  if (fs.existsSync(localYtDlp)) {
+    return localYtDlp;
+  }
+  return 'yt-dlp';
+}
+
+function getFfmpegPath() {
+  if (fs.existsSync(localFfmpeg)) {
+    return localFfmpeg;
+  }
+  return 'ffmpeg';
+}
 
 // Settings management variables
 let settings = {};
@@ -43,6 +64,234 @@ function saveSettingsInternal(newSettings) {
   }
 }
 
+function isCommandInPath(command) {
+  return new Promise((resolve) => {
+    const arg = command === 'ffmpeg' ? '-version' : '--version';
+    const proc = spawn(command, [arg]);
+    proc.on('error', () => {
+      resolve(false);
+    });
+    proc.on('close', (code) => {
+      resolve(code === 0);
+    });
+  });
+}
+
+async function checkDependencies() {
+  const ytDlpLocal = fs.existsSync(localYtDlp);
+  const ffmpegLocal = fs.existsSync(localFfmpeg);
+
+  let ytDlpGlobal = false;
+  let ffmpegGlobal = false;
+
+  if (!ytDlpLocal) {
+    ytDlpGlobal = await isCommandInPath('yt-dlp');
+  }
+  if (!ffmpegLocal) {
+    ffmpegGlobal = await isCommandInPath('ffmpeg');
+  }
+
+  return {
+    ytDlp: {
+      local: ytDlpLocal,
+      global: ytDlpGlobal,
+      available: ytDlpLocal || ytDlpGlobal
+    },
+    ffmpeg: {
+      local: ffmpegLocal,
+      global: ffmpegGlobal,
+      available: ffmpegLocal || ffmpegGlobal
+    }
+  };
+}
+
+function getDependencyUrls() {
+  const urls = {
+    ytDlp: '',
+    ffmpeg: ''
+  };
+
+  if (process.platform === 'win32') {
+    urls.ytDlp = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp.exe';
+  } else if (process.platform === 'darwin') {
+    urls.ytDlp = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp_macos';
+  } else {
+    urls.ytDlp = 'https://github.com/yt-dlp/yt-dlp/releases/latest/download/yt-dlp';
+  }
+
+  const is64 = process.arch === 'x64' || process.arch === 'arm64';
+  if (process.platform === 'win32') {
+    urls.ffmpeg = is64
+      ? 'https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-64.zip'
+      : 'https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-win-32.zip';
+  } else if (process.platform === 'darwin') {
+    urls.ffmpeg = 'https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-macos-64.zip';
+  } else {
+    urls.ffmpeg = is64
+      ? 'https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-linux-64.zip'
+      : 'https://github.com/ffbinaries/ffbinaries-prebuilt/releases/download/v6.1/ffmpeg-6.1-linux-32.zip';
+  }
+
+  return urls;
+}
+
+function downloadFile(url, destPath, win, itemName) {
+  return new Promise((resolve, reject) => {
+    const dir = path.dirname(destPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    const file = fs.createWriteStream(destPath);
+    const request = https.get(url, (response) => {
+      if (response.statusCode >= 300 && response.statusCode < 400 && response.headers.location) {
+        file.close();
+        fs.unlink(destPath, () => {});
+        return downloadFile(response.headers.location, destPath, win, itemName).then(resolve).catch(reject);
+      }
+
+      if (response.statusCode !== 200) {
+        file.close();
+        fs.unlink(destPath, () => {});
+        return reject(new Error(`Server returned status code ${response.statusCode}`));
+      }
+
+      const totalBytes = parseInt(response.headers['content-length'], 10);
+      let downloadedBytes = 0;
+
+      response.on('data', (chunk) => {
+        downloadedBytes += chunk.length;
+        if (totalBytes) {
+          const progress = Math.round((downloadedBytes / totalBytes) * 100);
+          win.webContents.send('dependency-status', {
+            type: 'progress',
+            item: itemName,
+            progress: progress
+          });
+        }
+      });
+
+      response.pipe(file);
+
+      file.on('finish', () => {
+        file.close();
+        resolve();
+      });
+    });
+
+    request.on('error', (err) => {
+      file.close();
+      fs.unlink(destPath, () => {});
+      reject(err);
+    });
+
+    file.on('error', (err) => {
+      file.close();
+      fs.unlink(destPath, () => {});
+      reject(err);
+    });
+  });
+}
+
+function extractZip(zipPath, destDir) {
+  return new Promise((resolve, reject) => {
+    let cmd = '';
+    if (process.platform === 'win32') {
+      cmd = `powershell.exe -NoProfile -Command "Expand-Archive -Path '${zipPath}' -DestinationPath '${destDir}' -Force"`;
+    } else {
+      cmd = `unzip -o "${zipPath}" -d "${destDir}"`;
+    }
+
+    exec(cmd, (error, stdout, stderr) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+  });
+}
+
+function makeExecutable(filePath) {
+  if (process.platform !== 'win32') {
+    try {
+      fs.chmodSync(filePath, 0o755);
+    } catch (err) {
+      console.error(`Failed to chmod ${filePath}:`, err);
+    }
+  }
+}
+
+async function setupDependencies(win) {
+  win.webContents.send('dependency-status', { type: 'checking' });
+
+  try {
+    const deps = await checkDependencies();
+    const urls = getDependencyUrls();
+
+    const needYtDlp = !deps.ytDlp.available;
+    const needFfmpeg = !deps.ffmpeg.available;
+
+    win.webContents.send('dependency-status', {
+      type: 'init',
+      needYtDlp,
+      needFfmpeg
+    });
+
+    if (!needYtDlp && !needFfmpeg) {
+      win.webContents.send('dependency-status', { type: 'all-ready' });
+      checkUpdates(win);
+      return;
+    }
+
+    if (!fs.existsSync(localBinDir)) {
+      fs.mkdirSync(localBinDir, { recursive: true });
+    }
+
+    if (needYtDlp) {
+      win.webContents.send('dependency-status', { type: 'download-start', item: 'yt-dlp' });
+      const tempPath = localYtDlp + '.tmp';
+      await downloadFile(urls.ytDlp, tempPath, win, 'yt-dlp');
+      
+      if (fs.existsSync(localYtDlp)) {
+        fs.unlinkSync(localYtDlp);
+      }
+      fs.renameSync(tempPath, localYtDlp);
+      makeExecutable(localYtDlp);
+      
+      win.webContents.send('dependency-status', { type: 'download-complete', item: 'yt-dlp' });
+    }
+
+    if (needFfmpeg) {
+      win.webContents.send('dependency-status', { type: 'download-start', item: 'ffmpeg' });
+      const zipPath = path.join(localBinDir, 'ffmpeg.zip');
+      await downloadFile(urls.ffmpeg, zipPath, win, 'ffmpeg');
+
+      win.webContents.send('dependency-status', { type: 'extracting', item: 'ffmpeg' });
+      await extractZip(zipPath, localBinDir);
+
+      try {
+        fs.unlinkSync(zipPath);
+      } catch (e) {
+        console.error('Failed to delete ffmpeg.zip:', e);
+      }
+
+      makeExecutable(localFfmpeg);
+      win.webContents.send('dependency-status', { type: 'download-complete', item: 'ffmpeg' });
+    }
+
+    win.webContents.send('dependency-status', { type: 'all-ready' });
+    checkUpdates(win);
+
+  } catch (error) {
+    console.error('Dependency setup failed:', error);
+    win.webContents.send('dependency-status', {
+      type: 'error',
+      message: error.message || 'Unknown error occurred during setup'
+    });
+  }
+}
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 950,
@@ -58,13 +307,15 @@ function createWindow() {
 
   win.loadFile('index.html');
   
-  // Async update check
-  checkUpdates(win);
+  win.webContents.once('did-finish-load', () => {
+    setupDependencies(win);
+  });
 }
 
 function checkUpdates(win) {
   // Check yt-dlp update
-  const ytUpdate = spawn('yt-dlp', ['-U']);
+  const ytDlpPath = getYtDlpPath();
+  const ytUpdate = spawn(ytDlpPath, ['-U']);
   ytUpdate.stdout.on('data', (data) => {
     win.webContents.send('update-log', `[yt-dlp update] ${data.toString()}`);
   });
@@ -76,7 +327,8 @@ function checkUpdates(win) {
   });
   
   // Verify FFmpeg is available
-  const ffmpegCheck = spawn('ffmpeg', ['-version']);
+  const ffmpegPath = getFfmpegPath();
+  const ffmpegCheck = spawn(ffmpegPath, ['-version']);
   ffmpegCheck.stdout.once('data', (data) => {
     const versionLine = data.toString().split('\n')[0];
     win.webContents.send('update-log', `[ffmpeg check] ${versionLine}`);
@@ -188,11 +440,18 @@ ipcMain.on('download-video', (event, { url, quality }) => {
     '--merge-output-format', mergeFormat,
     '-o', outPath,
     '--no-mtime',
-    url
   ];
 
+  if (fs.existsSync(localFfmpeg)) {
+    args.push('--ffmpeg-location', localBinDir);
+  }
+
+  args.push(url);
+
   win.webContents.send('download-status', `[VIDEO] Starting download in ${videoFormat.toUpperCase()} format for ${url}...`);
-  const ytProcess = spawn('yt-dlp', args);
+  
+  const ytDlpPath = getYtDlpPath();
+  const ytProcess = spawn(ytDlpPath, args);
   let finalPath = '';
 
   ytProcess.stdout.on('data', (data) => {
@@ -252,12 +511,19 @@ ipcMain.on('download-audio', (event, { url }) => {
 
   args.push(
     '-o', outPath,
-    '--no-mtime',
-    url
+    '--no-mtime'
   );
 
+  if (fs.existsSync(localFfmpeg)) {
+    args.push('--ffmpeg-location', localBinDir);
+  }
+
+  args.push(url);
+
   win.webContents.send('download-status', `[AUDIO] Starting extraction to ${audioFormat.toUpperCase()} format for ${url}...`);
-  const ytProcess = spawn('yt-dlp', args);
+  
+  const ytDlpPath = getYtDlpPath();
+  const ytProcess = spawn(ytDlpPath, args);
   let finalPath = '';
 
   ytProcess.stdout.on('data', (data) => {
@@ -317,12 +583,19 @@ ipcMain.on('download-subtitles', (event, { url, lang }) => {
   args.push(
     '--skip-download',
     '-o', outPath,
-    '--no-mtime',
-    url
+    '--no-mtime'
   );
 
+  if (fs.existsSync(localFfmpeg)) {
+    args.push('--ffmpeg-location', localBinDir);
+  }
+
+  args.push(url);
+
   win.webContents.send('download-status', `[SUBS] Starting download for ${url}...`);
-  const ytProcess = spawn('yt-dlp', args);
+  
+  const ytDlpPath = getYtDlpPath();
+  const ytProcess = spawn(ytDlpPath, args);
   let finalPath = '';
 
   ytProcess.stdout.on('data', (data) => {

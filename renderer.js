@@ -477,3 +477,129 @@ if (terminalResizer && statusTerminalEl) {
     statusTerminalEl.classList.remove('resizing');
   }
 }
+
+// Dependency installer IPC listener
+const depModal = document.getElementById('dependency-modal');
+const depValYt = document.getElementById('dep-val-yt');
+const depValFfmpeg = document.getElementById('dep-val-ffmpeg');
+const depStatusYt = document.getElementById('dep-status-yt');
+const depStatusFfmpeg = document.getElementById('dep-status-ffmpeg');
+const depProgressContainer = document.getElementById('dependency-progress-container');
+const depProgressText = document.getElementById('dep-progress-text');
+const depProgressPercent = document.getElementById('dep-progress-percent');
+const depProgressFill = document.getElementById('dep-progress-fill');
+
+if (depModal) {
+  window.electronAPI.onDependencyStatus((data) => {
+    switch (data.type) {
+      case 'checking':
+        depModal.classList.add('active');
+        if (depValYt) depValYt.textContent = 'Verifying...';
+        if (depValFfmpeg) depValFfmpeg.textContent = 'Verifying...';
+        break;
+
+      case 'init':
+        depModal.classList.add('active');
+        
+        // Update states based on what needs download
+        if (data.needYtDlp) {
+          if (depStatusYt) {
+            depStatusYt.className = 'dependency-status-item downloading';
+          }
+          if (depValYt) depValYt.textContent = 'Awaiting download...';
+        } else {
+          if (depStatusYt) {
+            depStatusYt.className = 'dependency-status-item completed';
+          }
+          if (depValYt) depValYt.textContent = 'Ready';
+        }
+
+        if (data.needFfmpeg) {
+          if (depStatusFfmpeg) {
+            depStatusFfmpeg.className = 'dependency-status-item downloading';
+          }
+          if (depValFfmpeg) depValFfmpeg.textContent = 'Awaiting download...';
+        } else {
+          if (depStatusFfmpeg) {
+            depStatusFfmpeg.className = 'dependency-status-item completed';
+          }
+          if (depValFfmpeg) depValFfmpeg.textContent = 'Ready';
+        }
+        break;
+
+      case 'download-start':
+        depModal.classList.add('active');
+        if (depProgressContainer) depProgressContainer.style.display = 'block';
+        if (depProgressFill) depProgressFill.style.width = '0%';
+        if (depProgressPercent) depProgressPercent.textContent = '0%';
+        
+        if (data.item === 'yt-dlp') {
+          if (depStatusYt) depStatusYt.className = 'dependency-status-item downloading';
+          if (depValYt) depValYt.textContent = 'Downloading (0%)...';
+          if (depProgressText) depProgressText.textContent = 'Downloading yt-dlp core...';
+        } else if (data.item === 'ffmpeg') {
+          if (depStatusFfmpeg) depStatusFfmpeg.className = 'dependency-status-item downloading';
+          if (depValFfmpeg) depValFfmpeg.textContent = 'Downloading (0%)...';
+          if (depProgressText) depProgressText.textContent = 'Downloading FFmpeg utilities...';
+        }
+        break;
+
+      case 'progress':
+        if (depProgressFill) depProgressFill.style.width = `${data.progress}%`;
+        if (depProgressPercent) depProgressPercent.textContent = `${data.progress}%`;
+        
+        if (data.item === 'yt-dlp') {
+          if (depValYt) depValYt.textContent = `Downloading (${data.progress}%)...`;
+        } else if (data.item === 'ffmpeg') {
+          if (depValFfmpeg) depValFfmpeg.textContent = `Downloading (${data.progress}%)...`;
+        }
+        break;
+
+      case 'extracting':
+        if (depProgressFill) depProgressFill.style.width = '100%';
+        if (depProgressPercent) depProgressPercent.textContent = '100%';
+        if (depProgressText) depProgressText.textContent = 'Extracting FFmpeg binaries...';
+        if (depStatusFfmpeg) depStatusFfmpeg.className = 'dependency-status-item extracting';
+        if (depValFfmpeg) depValFfmpeg.textContent = 'Extracting...';
+        break;
+
+      case 'download-complete':
+        if (data.item === 'yt-dlp') {
+          if (depStatusYt) depStatusYt.className = 'dependency-status-item completed';
+          if (depValYt) depValYt.textContent = 'Completed';
+        } else if (data.item === 'ffmpeg') {
+          if (depStatusFfmpeg) depStatusFfmpeg.className = 'dependency-status-item completed';
+          if (depValFfmpeg) depValFfmpeg.textContent = 'Completed';
+        }
+        break;
+
+      case 'all-ready':
+        if (depProgressText) depProgressText.textContent = 'Dependencies loaded. Launching...';
+        if (depProgressFill) depProgressFill.style.width = '100%';
+        if (depProgressPercent) depProgressPercent.textContent = '100%';
+        
+        // Final transition: remove active class to fade out the modal
+        setTimeout(() => {
+          depModal.classList.remove('active');
+          if (depProgressContainer) depProgressContainer.style.display = 'none';
+        }, 1200);
+        break;
+
+      case 'error':
+        if (depProgressText) depProgressText.textContent = 'Setup Error!';
+        if (depProgressPercent) depProgressPercent.textContent = 'Fail';
+        
+        if (depStatusYt && depStatusYt.classList.contains('downloading')) {
+          depStatusYt.className = 'dependency-status-item error';
+          if (depValYt) depValYt.textContent = 'Download failed';
+        }
+        if (depStatusFfmpeg && depStatusFfmpeg.classList.contains('downloading')) {
+          depStatusFfmpeg.className = 'dependency-status-item error';
+          if (depValFfmpeg) depValFfmpeg.textContent = 'Download failed';
+        }
+        
+        alert(`Failed to configure dependencies:\n${data.message}\n\nPlease check your internet connection or install them manually.`);
+        break;
+    }
+  });
+}

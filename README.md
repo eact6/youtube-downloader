@@ -87,10 +87,12 @@ graph TD
 
 ## System Prerequisites
 
-To run this application, ensure the following command-line tools are accessible on your system's environment PATH:
+The application is fully self-contained and automatically configures its environment:
 
-1. **`yt-dlp`**: The core media extraction tool. It will check and auto-update itself on application launch if it has permission.
-2. **`ffmpeg`**: Required for merging video and audio streams, as well as extracting and encoding MP3 audio.
+1. **`yt-dlp`**: Automatically downloaded and setup locally in the application's userData directory on first launch if not already available in the system PATH.
+2. **`ffmpeg`**: Automatically downloaded, extracted, and setup locally in the application's userData directory on first launch if not already available in the system PATH.
+
+*Note: If you already have these tools installed in your system PATH, the application will detect them automatically and skip downloading.*
 
 ---
 

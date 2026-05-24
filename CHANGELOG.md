@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-05-25
+
+### Added
+- Add an automatic, self-contained dependency installer that verifies, downloads, and configures required `yt-dlp` and `ffmpeg` binaries automatically on first launch.
+- Add a premium glassmorphism dependency installer modal overlay with visual status tracking, download progress bars, and real-time step descriptions.
+- Add cross-platform download support for Windows (x64/x86), macOS, and Linux configurations using official GitHub and ffbinaries static builds.
+
+### Changed
+- Refactor the main process start sequence to run startup checks on window load before triggering background update checkers.
+- Update Electron IPC bridge to stream dependency setup status, download progress percentages, extraction steps, and error details between processes.
+- Refactor all YouTube media download channels to target resolved local executables and specify the `--ffmpeg-location` parameter pointing to the local bin directory when appropriate.
+
 ## [1.1.1] - 2026-05-19
 
 ### Fixed

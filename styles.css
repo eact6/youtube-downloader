@@ -604,3 +604,217 @@ option {
   animation: fadeIn 0.2s ease-in-out;
 }
 
+/* Dependency Installer Modal */
+.dependency-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(3, 3, 3, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dependency-modal.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dependency-card {
+  background-color: hsl(var(--card));
+  border: 1px solid hsl(var(--border));
+  border-radius: calc(var(--radius) * 1.5);
+  padding: 2.5rem;
+  width: 440px;
+  max-width: 90%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.7);
+  animation: modalScaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalScaleIn {
+  from { transform: scale(0.95); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+.dependency-logo {
+  color: hsl(var(--primary));
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: radial-gradient(circle, hsl(var(--primary) / 0.15) 0%, transparent 70%);
+  animation: pulseLogo 2s infinite ease-in-out;
+}
+
+@keyframes pulseLogo {
+  0% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 15px hsl(var(--primary) / 0.2); }
+  100% { transform: scale(1); opacity: 0.9; }
+}
+
+.dependency-title {
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.5rem;
+  color: hsl(var(--foreground));
+}
+
+.dependency-subtitle {
+  font-size: 0.875rem;
+  color: hsl(var(--muted-foreground));
+  margin-bottom: 2rem;
+  line-height: 1.4;
+}
+
+.dependency-status-list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  margin-bottom: 2rem;
+}
+
+.dependency-status-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background-color: hsl(var(--muted) / 0.3);
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius);
+  text-align: left;
+  font-size: 0.8125rem;
+  transition: all 0.2s ease;
+}
+
+.dependency-status-item .status-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  margin-right: 0.75rem;
+  flex-shrink: 0;
+}
+
+.dependency-status-item.pending {
+  border-color: hsl(var(--border));
+  opacity: 0.5;
+}
+
+.dependency-status-item.pending .status-indicator {
+  background-color: hsl(var(--muted-foreground));
+}
+
+.dependency-status-item.downloading {
+  border-color: hsl(var(--primary) / 0.5);
+  background-color: hsl(var(--primary) / 0.05);
+  opacity: 1;
+}
+
+.dependency-status-item.downloading .status-indicator {
+  background-color: hsl(var(--primary));
+  animation: pulseIndicator 1s infinite alternate;
+}
+
+.dependency-status-item.extracting {
+  border-color: #eab308;
+  background-color: rgba(234, 179, 8, 0.05);
+  opacity: 1;
+}
+
+.dependency-status-item.extracting .status-indicator {
+  background-color: #eab308;
+  animation: pulseIndicator 0.5s infinite alternate;
+}
+
+.dependency-status-item.completed {
+  border-color: #22c55e;
+  background-color: rgba(34, 197, 94, 0.05);
+  opacity: 1;
+}
+
+.dependency-status-item.completed .status-indicator {
+  background-color: #22c55e;
+}
+
+.dependency-status-item.error {
+  border-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.05);
+  opacity: 1;
+}
+
+.dependency-status-item.error .status-indicator {
+  background-color: #ef4444;
+}
+
+@keyframes pulseIndicator {
+  from { opacity: 0.4; }
+  to { opacity: 1; }
+}
+
+.dependency-status-item .status-label {
+  flex: 1;
+  font-weight: 500;
+  color: hsl(var(--foreground));
+}
+
+.dependency-status-item .status-value {
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 600;
+}
+
+.dependency-status-item.completed .status-value {
+  color: #22c55e;
+}
+
+.dependency-status-item.error .status-value {
+  color: #ef4444;
+}
+
+.dependency-progress-bar {
+  width: 100%;
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+.dependency-progress-bar .progress-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: hsl(var(--muted-foreground));
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.dependency-progress-bar .progress-track {
+  width: 100%;
+  height: 6px;
+  background-color: hsl(var(--muted));
+  border-radius: 9999px;
+  overflow: hidden;
+  position: relative;
+}
+
+.dependency-progress-bar .progress-fill {
+  width: 0%;
+  height: 100%;
+  background-color: hsl(var(--primary));
+  border-radius: 9999px;
+  transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+

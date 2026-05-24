@@ -329,6 +329,41 @@
       </section>
     </main>
   </div>
+
+  <!-- DEPENDENCY SETUP MODAL -->
+  <div id="dependency-modal" class="dependency-modal">
+    <div class="dependency-card">
+      <div class="dependency-logo">
+        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu"><rect width="16" height="16" x="4" y="4" rx="2"/><rect width="6" height="6" x="9" y="9" rx="1"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 15h3M1 9h3M1 15h3"/></svg>
+      </div>
+      <h2 class="dependency-title">Setting Up Environment</h2>
+      <p class="dependency-subtitle">Configuring required media components for YT-DLP GUI wrapper.</p>
+      
+      <div class="dependency-status-list">
+        <div id="dep-status-yt" class="dependency-status-item pending">
+          <div class="status-indicator"></div>
+          <span class="status-label">yt-dlp core downloader</span>
+          <span id="dep-val-yt" class="status-value">Verifying...</span>
+        </div>
+        <div id="dep-status-ffmpeg" class="dependency-status-item pending">
+          <div class="status-indicator"></div>
+          <span class="status-label">FFmpeg media utilities</span>
+          <span id="dep-val-ffmpeg" class="status-value">Verifying...</span>
+        </div>
+      </div>
+
+      <div id="dependency-progress-container" class="dependency-progress-bar" style="display: none;">
+        <div class="progress-details">
+          <span id="dep-progress-text">Initializing setup...</span>
+          <span id="dep-progress-percent">0%</span>
+        </div>
+        <div class="progress-track">
+          <div id="dep-progress-fill" class="progress-fill"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script src="renderer.js"></script>
 </body>
 </html>
