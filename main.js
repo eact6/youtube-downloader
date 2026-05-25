@@ -38,7 +38,8 @@ function initSettings() {
     soundEnabled: true,
     autoOpenFolder: false,
     videoFormat: 'mp4',
-    audioFormat: 'mp3'
+    audioFormat: 'mp3',
+    firstRunComplete: false
   };
   
   settings = { ...defaultSettings };
@@ -240,6 +241,7 @@ async function setupDependencies(win) {
 
     if (!needYtDlp && !needFfmpeg) {
       win.webContents.send('dependency-status', { type: 'all-ready' });
+      saveSettingsInternal({ firstRunComplete: true });
       checkUpdates(win);
       return;
     }
@@ -281,6 +283,7 @@ async function setupDependencies(win) {
     }
 
     win.webContents.send('dependency-status', { type: 'all-ready' });
+    saveSettingsInternal({ firstRunComplete: true });
     checkUpdates(win);
 
   } catch (error) {
@@ -308,7 +311,11 @@ function createWindow() {
   win.loadFile('index.html');
   
   win.webContents.once('did-finish-load', () => {
-    setupDependencies(win);
+    if (!settings.firstRunComplete) {
+      setupDependencies(win);
+    } else {
+      checkUpdates(win);
+    }
   });
 }
 
@@ -727,4 +734,8 @@ ipcMain.on('download-instagram', (event, { url, format }) => {
     }
     else win.webContents.send('download-error', `[INSTAGRAM ${label}] Download failed with code ${code}`);
   });
+});
+
+ipcMain.on('continue-anyway', (event) => {
+  saveSettingsInternal({ firstRunComplete: true });
 });

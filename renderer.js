@@ -525,6 +525,16 @@ const depProgressText = document.getElementById('dep-progress-text');
 const depProgressPercent = document.getElementById('dep-progress-percent');
 const depProgressFill = document.getElementById('dep-progress-fill');
 
+const btnDepContinue = document.getElementById('btn-dep-continue');
+if (btnDepContinue) {
+  btnDepContinue.addEventListener('click', () => {
+    window.electronAPI.continueAnyway();
+    if (depModal) {
+      depModal.classList.remove('active');
+    }
+  });
+}
+
 if (depModal) {
   window.electronAPI.onDependencyStatus((data) => {
     switch (data.type) {
