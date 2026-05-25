@@ -2,7 +2,7 @@
 
 A premium, open-source desktop application that wraps the powerful `yt-dlp` command-line utility in a beautifully designed Electron GUI. Built for content creators, video editors, and power users who need high-quality, reliable media downloads with a seamless user experience.
 
-[![Download Latest Release](https://img.shields.io/github/v/release/github-username/youtube-downloader?label=Download%20Latest%20Release&style=for-the-badge)](https://github.com/github-username/youtube-downloader/releases)
+[![Download Latest Release](https://img.shields.io/github/v/release/eact6/youtube-downloader?label=Download%20Latest%20Release&style=for-the-badge)](https://github.com/eact6/youtube-downloader/releases)
 
 ---
 
@@ -99,7 +99,7 @@ The application is fully self-contained and automatically configures its environ
 ## Getting Started
 
 ### 📦 Download Precompiled Binaries
-You can download the latest precompiled standalone Windows installer (`.exe`) directly from the **[Releases Page](https://github.com/github-username/youtube-downloader/releases)**.
+You can download the latest precompiled standalone Windows installer (`.exe`) directly from the **[Releases Page](https://github.com/eact6/youtube-downloader/releases)**.
 
 ### 🛠️ Local Developer Setup
 
@@ -107,7 +107,7 @@ You can download the latest precompiled standalone Windows installer (`.exe`) di
 Clone the repository and install the project dependencies:
 
 ```bash
-git clone https://github.com/github-username/youtube-downloader.git
+git clone https://github.com/eact6/youtube-downloader.git
 cd youtube-downloader
 npm install
 ```
