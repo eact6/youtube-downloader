@@ -377,7 +377,13 @@ ipcMain.on('open-folder', (event, filePath) => {
 ipcMain.on('open-download-folder', (event, type) => {
   try {
     const baseDir = settings.downloadDir || app.getPath('downloads');
-    const subFolder = type === 'video' ? 'yt-videos' : 'yt-audios';
+    let subFolder = 'yt-videos';
+    if (type === 'video') subFolder = 'yt-videos';
+    else if (type === 'audio') subFolder = 'yt-audios';
+    else if (type === 'ig-video') subFolder = 'ig-videos';
+    else if (type === 'ig-audio') subFolder = 'ig-audios';
+    else if (type === 'instagram') subFolder = 'ig-videos';
+    
     const targetDir = path.join(baseDir, subFolder);
     
     if (!fs.existsSync(targetDir)) {
@@ -618,5 +624,107 @@ ipcMain.on('download-subtitles', (event, { url, lang }) => {
       }
     }
     else win.webContents.send('download-error', `[SUBS] Download failed with code ${code}`);
+  });
+});
+
+ipcMain.on('download-instagram', (event, { url, format }) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  const baseDir = settings.downloadDir || app.getPath('downloads');
+  
+  let outPath = '';
+  let args = [];
+  let subFolder = '';
+  
+  if (format === 'audio') {
+    subFolder = 'ig-audios';
+    const audioDir = path.join(baseDir, subFolder);
+    if (!fs.existsSync(audioDir)) fs.mkdirSync(audioDir, { recursive: true });
+    outPath = path.join(audioDir, '%(title)s.%(ext)s');
+    
+    const audioFormat = settings.audioFormat || 'mp3';
+    args = [
+      '-f', 'bestaudio',
+      '-x',
+      '--audio-format', audioFormat,
+    ];
+    if (audioFormat === 'mp3') {
+      args.push('--audio-quality', '0');
+    }
+  } else {
+    subFolder = 'ig-videos';
+    const videoDir = path.join(baseDir, subFolder);
+    if (!fs.existsSync(videoDir)) fs.mkdirSync(videoDir, { recursive: true });
+    outPath = path.join(videoDir, '%(title)s.%(ext)s');
+    
+    const videoFormat = settings.videoFormat || 'mp4';
+    let formatStr = '';
+    let mergeFormat = '';
+
+    if (videoFormat === 'webm') {
+      formatStr = `bestvideo[ext=webm]+bestaudio[ext=webm]/best[ext=webm]/best`;
+      mergeFormat = 'webm';
+    } else if (videoFormat === 'mkv') {
+      formatStr = `bestvideo+bestaudio/best`;
+      mergeFormat = 'mkv';
+    } else {
+      // mp4
+      formatStr = `bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best`;
+      mergeFormat = 'mp4';
+    }
+    
+    args = [
+      '-f', formatStr,
+      '--merge-output-format', mergeFormat,
+    ];
+  }
+  
+  args.push(
+    '-o', outPath,
+    '--no-mtime'
+  );
+  
+  if (fs.existsSync(localFfmpeg)) {
+    args.push('--ffmpeg-location', localBinDir);
+  }
+  
+  args.push(url);
+  
+  const label = format === 'audio' ? 'AUDIO' : 'VIDEO';
+  win.webContents.send('download-status', `[INSTAGRAM ${label}] Starting download in ${format === 'audio' ? (settings.audioFormat || 'mp3').toUpperCase() : (settings.videoFormat || 'mp4').toUpperCase()} format for ${url}...`);
+  
+  const ytDlpPath = getYtDlpPath();
+  const ytProcess = spawn(ytDlpPath, args);
+  let finalPath = '';
+  
+  ytProcess.stdout.on('data', (data) => {
+    const text = data.toString();
+    win.webContents.send('download-progress', text);
+    const lines = text.split('\n');
+    for (const line of lines) {
+      const destMatch = line.match(/Destination:\s*(.+)/);
+      if (destMatch) {
+        const filePath = destMatch[1].trim();
+        if (!filePath.endsWith('.part') && 
+            !filePath.endsWith('.ytdl') && 
+            !/\.f\d+\.[^.]+$/.test(filePath)) {
+          finalPath = filePath;
+        }
+      }
+      const mergeMatch = line.match(/Merging formats into "(.+)"/);
+      if (mergeMatch) finalPath = mergeMatch[1].trim();
+      const existMatch = line.match(/\[download\]\s+(.+)\s+has already been downloaded/);
+      if (existMatch) finalPath = existMatch[1].trim();
+    }
+  });
+  ytProcess.stderr.on('data', (data) => win.webContents.send('download-progress', data.toString()));
+  ytProcess.on('close', (code) => {
+    if (code === 0) {
+      const type = format === 'audio' ? 'ig-audio' : 'ig-video';
+      win.webContents.send('download-complete', { type, url, status: 'Success', filePath: finalPath });
+      if (settings.autoOpenFolder && finalPath) {
+        shell.showItemInFolder(finalPath);
+      }
+    }
+    else win.webContents.send('download-error', `[INSTAGRAM ${label}] Download failed with code ${code}`);
   });
 });

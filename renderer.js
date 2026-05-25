@@ -122,6 +122,26 @@ document.getElementById('btn-download-all-subs').addEventListener('click', () =>
   document.getElementById('subs-url').value = '';
 });
 
+// Download Instagram
+const btnDownloadInstagram = document.getElementById('btn-download-instagram');
+if (btnDownloadInstagram) {
+  btnDownloadInstagram.addEventListener('click', () => {
+    if (isDownloading) {
+      alert('A download is already in progress. Please wait for the current download to finish!');
+      appendLog('[⚠️ Warning] A download is already in progress. Concurrent downloads are disabled.', 'log-warn');
+      return;
+    }
+    const url = document.getElementById('instagram-url').value.trim();
+    const format = document.getElementById('instagram-format').value;
+    if (!url) return;
+    
+    const label = format === 'audio' ? 'audio' : 'video';
+    startDownloadIndicator(`Downloading Instagram ${label}...`);
+    window.electronAPI.downloadInstagram({ url, format });
+    document.getElementById('instagram-url').value = '';
+  });
+}
+
 // Terminal Output
 const terminal = document.getElementById('terminal-output');
 
@@ -220,9 +240,18 @@ function renderRecents() {
     li.className = 'recent-item';
     
     const videoId = extractVideoId(item.url);
-    const thumbnailHtml = videoId 
-      ? `<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="Thumbnail" class="recent-thumbnail" style="cursor: pointer;" title="Click to open folder">`
-      : `<div class="recent-thumbnail" style="cursor: pointer;" title="Click to open folder"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>`;
+    const isInstagram = item.url.includes('instagram.com') || item.url.includes('instagr.am') || item.type.startsWith('ig-');
+    
+    let thumbnailHtml = '';
+    if (videoId) {
+      thumbnailHtml = `<img src="https://img.youtube.com/vi/${videoId}/hqdefault.jpg" alt="Thumbnail" class="recent-thumbnail" style="cursor: pointer;" title="Click to open folder">`;
+    } else if (isInstagram) {
+      thumbnailHtml = `<div class="recent-thumbnail" style="cursor: pointer; background: linear-gradient(45deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%); color: white; border: none;" title="Click to open folder">
+        <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.25" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg>
+      </div>`;
+    } else {
+      thumbnailHtml = `<div class="recent-thumbnail" style="cursor: pointer;" title="Click to open folder"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>`;
+    }
     
     li.innerHTML = `
       ${thumbnailHtml}
@@ -445,6 +474,13 @@ if (openVideoDirBtn) {
 if (openAudioDirBtn) {
   openAudioDirBtn.addEventListener('click', () => {
     window.electronAPI.openDownloadFolder('audio');
+  });
+}
+
+const openInstagramDirBtn = document.getElementById('btn-open-instagram-dir');
+if (openInstagramDirBtn) {
+  openInstagramDirBtn.addEventListener('click', () => {
+    window.electronAPI.openDownloadFolder('instagram');
   });
 }
 
